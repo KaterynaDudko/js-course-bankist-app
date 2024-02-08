@@ -66,6 +66,16 @@ let currentAcc;
 
 //LOG IN to the app
 
+const updateUI = function (acc) {
+  //Display Movements
+  displayMovements(acc.movements);
+  //Display Balance
+  displayCurrentBalance(acc);
+
+  //Display Summary
+  displaySummary(acc);
+};
+
 btnLogin.addEventListener('click', function (e) {
   //prevent page reload
   e.preventDefault();
@@ -78,15 +88,29 @@ btnLogin.addEventListener('click', function (e) {
     containerApp.style.opacity = 100;
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
-    //Display Movements
-    displayMovements(currentAcc.movements);
-    //Display Balance
-    displayCurrentBalance(currentAcc.movements);
-
-    //Display Summary
-    displaySummary(currentAcc);
+    updateUI(currentAcc);
   }
   //TODO: show error if no user found or pin in incorrect
+});
+
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
+  const amount = Number(inputTransferAmount.value);
+  const receiverAcc = accounts.find(
+    acc => acc.username === inputTransferTo.value
+  );
+  inputTransferTo.value = inputTransferAmount.value = '';
+  inputTransferAmount.blur();
+  if (
+    amount > 0 &&
+    amount <= currentAcc.balance &&
+    receiverAcc &&
+    receiverAcc?.username !== currentAcc.username
+  ) {
+    currentAcc.movements.push(-amount);
+    receiverAcc.movements.push(amount);
+    updateUI(currentAcc);
+  }
 });
 
 //Display movements
@@ -122,12 +146,12 @@ const user = 'Steven Thomas Williams';
 createUsername(accounts);
 
 //Display current balance
-const displayCurrentBalance = function (movements) {
-  const balance = movements.reduce((acc, cur) => acc + cur, 0);
-  labelBalance.textContent = `${balance} €`;
+const displayCurrentBalance = function (acc) {
+  acc.balance = acc.movements.reduce((acc, cur) => acc + cur, 0);
+  labelBalance.textContent = `${acc.balance} €`;
 };
 
-//Calculat4e summary
+//Calculate summary
 const displaySummary = function (acc) {
   const incomes = acc.movements
     .filter(mov => mov > 0)
