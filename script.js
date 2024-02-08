@@ -76,6 +76,7 @@ const updateUI = function (acc) {
   displaySummary(acc);
 };
 
+//Event Handlers
 btnLogin.addEventListener('click', function (e) {
   //prevent page reload
   e.preventDefault();
@@ -111,6 +112,27 @@ btnTransfer.addEventListener('click', function (e) {
     receiverAcc.movements.push(amount);
     updateUI(currentAcc);
   }
+
+  //TODO: show msg if transfer is impossible
+});
+
+btnClose.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  if (
+    currentAcc.username === inputCloseUsername.value &&
+    currentAcc.pin === Number(inputClosePin.value)
+  ) {
+    const accToCloseIndex = accounts.findIndex(
+      acc => acc.username === inputCloseUsername.value
+    );
+    console.log(accToCloseIndex);
+    accounts.splice(accToCloseIndex, 1);
+    console.log(accounts);
+    labelWelcome.textContent = `Log in to get started`;
+    containerApp.style.opacity = 0;
+  }
+  inputClosePin = inputCloseUsername = '';
 });
 
 //Display movements
