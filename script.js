@@ -61,8 +61,35 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+let currentAcc;
 // APP LOGIC
 
+//LOG IN to the app
+
+btnLogin.addEventListener('click', function (e) {
+  //prevent page reload
+  e.preventDefault();
+  currentAcc = accounts.find(acc => acc.username === inputLoginUsername.value);
+  if (currentAcc?.pin === Number(inputLoginPin.value)) {
+    //Display UI
+    labelWelcome.textContent = `Welcome back, ${
+      currentAcc.owner.split(' ')[0]
+    }`;
+    containerApp.style.opacity = 100;
+    inputLoginUsername.value = inputLoginPin.value = '';
+    inputLoginPin.blur();
+    //Display Movements
+    displayMovements(currentAcc.movements);
+    //Display Balance
+    displayCurrentBalance(currentAcc.movements);
+
+    //Display Summary
+    displaySummary(currentAcc);
+  }
+  //TODO: show error if no user found or pin in incorrect
+});
+
+//Display movements
 const displayMovements = function (movements, sort = false) {
   containerMovements.innerHTML = '';
 
@@ -81,4 +108,41 @@ const displayMovements = function (movements, sort = false) {
   });
 };
 
-displayMovements(account1.movements);
+//Compute Usernames for each account
+const createUsername = function (accs) {
+  accs.forEach(acc => {
+    acc.username = acc.owner
+      .toLowerCase()
+      .split(' ')
+      .map(name => name[0])
+      .join('');
+  });
+};
+const user = 'Steven Thomas Williams';
+createUsername(accounts);
+
+//Display current balance
+const displayCurrentBalance = function (movements) {
+  const balance = movements.reduce((acc, cur) => acc + cur, 0);
+  labelBalance.textContent = `${balance} €`;
+};
+
+//Calculat4e summary
+const displaySummary = function (acc) {
+  const incomes = acc.movements
+    .filter(mov => mov > 0)
+    .reduce((acc, cur) => acc + cur, 0);
+  const outcomes = acc.movements
+    .filter(mov => mov < 0)
+    .reduce((acc, cur) => acc + cur, 0);
+
+  labelSumIn.textContent = `${incomes}€`;
+  labelSumOut.textContent = `${Math.abs(outcomes)} €`;
+
+  const interest = acc.movements
+    .filter(mov => mov > 0)
+    .map(deposit => (deposit * acc.interestRate) / 100)
+    .filter(interest => interest >= 1)
+    .reduce((acc, cur) => acc + cur, 0);
+  labelSumInterest.textContent = `${interest} €`;
+};
