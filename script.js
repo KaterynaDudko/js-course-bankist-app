@@ -221,9 +221,12 @@ btnLoan.addEventListener('click', function (e) {
 
   const amount = Math.floor(inputLoanAmount.value);
   if (amount > 0 && currentAcc.movements.some(mov => mov >= amount * 0.1)) {
-    currentAcc.movements.push(amount);
-    currentAcc.movementsDates.push(new Date());
-    updateUI(currentAcc);
+    //Just so its seems like bank is varifying the request ()_()
+    setTimeout(() => {
+      currentAcc.movements.push(amount);
+      currentAcc.movementsDates.push(new Date());
+      updateUI(currentAcc);
+    }, 3000);
   }
   inputLoanAmount.value = '';
 });
@@ -247,6 +250,13 @@ const formatMovementDate = function (date, locale) {
   return new Intl.DateTimeFormat(locale).format(date);
 };
 
+const formatMovement = function (locale, mov, currency) {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(mov);
+};
+
 const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
 
@@ -259,11 +269,12 @@ const displayMovements = function (acc, sort = false) {
     const movDate = new Date(acc.movementsDates[i]);
 
     const date = formatMovementDate(movDate, acc.locale);
+    const formattedMovement = formatMovement(acc.locale, mov, acc.currency);
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${i} ${type}</div>
         <div class="movements__date">${date}</div>
-        <div class="movements__value">${mov.toFixed(2)}</div>
+        <div class="movements__value">${formattedMovement}</div>
       </div>
       `;
 
@@ -287,7 +298,11 @@ createUsername(accounts);
 //Display current balance
 const displayCurrentBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, cur) => acc + cur, 0);
-  labelBalance.textContent = `${acc.balance.toFixed(2)} €`;
+  labelBalance.textContent = `${formatMovement(
+    acc.locale,
+    acc.balance,
+    acc.currency
+  )}`;
 };
 
 //Calculate summary
@@ -299,13 +314,25 @@ const displaySummary = function (acc) {
     .filter(mov => mov < 0)
     .reduce((acc, cur) => acc + cur, 0);
 
-  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
-  labelSumOut.textContent = `${Math.abs(outcomes.toFixed(2))} €`;
+  labelSumIn.textContent = `${formatMovement(
+    acc.locale,
+    incomes,
+    acc.currency
+  )}`;
+  labelSumOut.textContent = `${formatMovement(
+    acc.locale,
+    outcomes,
+    acc.currency
+  )}`;
 
   const interest = acc.movements
     .filter(mov => mov > 0)
     .map(deposit => (deposit * acc.interestRate) / 100)
     .filter(interest => interest >= 1)
     .reduce((acc, cur) => acc + cur, 0);
-  labelSumInterest.textContent = `${interest.toFixed(2)} €`;
+  labelSumInterest.textContent = `${formatMovement(
+    acc.locale,
+    interest,
+    acc.currency
+  )}`;
 };
