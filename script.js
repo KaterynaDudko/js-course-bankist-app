@@ -110,8 +110,9 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-let currentAcc;
+let currentAcc, timer;
 let sorted = false;
+
 // APP LOGIC
 
 //LOG IN to the app
@@ -124,6 +125,26 @@ const updateUI = function (acc) {
 
   //Display Summary
   displaySummary(acc);
+};
+
+const startLogOutTimer = function () {
+  let time = 300;
+
+  const tick = function () {
+    const min = `${Math.trunc(time / 60)}`.padStart(2, 0);
+    const sec = `${Math.trunc(time % 60)}`.padStart(2, 0);
+    labelTimer.textContent = `${min}:${sec}`;
+
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = 'Log in to get started';
+      containerApp.style.opacity = 0;
+    }
+    time--;
+  };
+  tick();
+  const timer = setInterval(tick, 1000);
+  return timer;
 };
 
 const getCurrentDate = function (locale) {
@@ -169,6 +190,8 @@ btnLogin.addEventListener('click', function (e) {
     // const minutes = `${now.getMinutes()}`.padStart(2, 0);
 
     labelDate.textContent = getCurrentDate(currentAcc.locale);
+    if (timer) clearInterval(timer);
+    timer = startLogOutTimer();
     updateUI(currentAcc);
   }
   //TODO: show error if no user found or pin in incorrect
@@ -193,6 +216,8 @@ btnTransfer.addEventListener('click', function (e) {
     currentAcc.movementsDates.push(new Date());
     updateUI(currentAcc);
   }
+  clearInterval(timer);
+  timer = startLogOutTimer();
 
   //TODO: show msg if transfer is impossible
 });
@@ -214,6 +239,7 @@ btnClose.addEventListener('click', function (e) {
     containerApp.style.opacity = 0;
   }
   inputClosePin.value = inputCloseUsername.value = '';
+  clearInterval(timer);
 });
 
 btnLoan.addEventListener('click', function (e) {
@@ -229,6 +255,8 @@ btnLoan.addEventListener('click', function (e) {
     }, 3000);
   }
   inputLoanAmount.value = '';
+  clearInterval(timer);
+  timer = startLogOutTimer();
 });
 
 btnSort.addEventListener('click', function (e) {
