@@ -12,6 +12,7 @@ const tabs = document.querySelectorAll('.operations__tab');
 const tabContainer = document.querySelector('.operations__tab-container');
 const tabsContent = document.querySelectorAll('.operations__content');
 const nav = document.querySelector('.nav');
+const header = document.querySelector('.header');
 
 ///////////////////////////////////////
 // Modal window
@@ -111,3 +112,26 @@ const handleMenuFade = function (e) {
 nav.addEventListener('mouseover', handleMenuFade.bind(0.5));
 
 nav.addEventListener('mouseout', handleMenuFade.bind(1));
+
+//Sticky navigation
+const navHeigth = nav.getBoundingClientRect().height;
+console.log(navHeigth);
+//every time observer intersects with observer.observe(element) this function will be called
+const stickyNavigation = function (entries) {
+  const [entry] = entries;
+  console.log(entry);
+  if (!entry.isIntersecting) nav.classList.add('sticky');
+  else nav.classList.remove('sticky');
+};
+const observerOptions = {
+  root: null, //viewport
+  //treshhold: [0, 0.2], // 0 - when target moves completely out of/into the root
+  treshhold: 0,
+  rootMargin: `-${navHeigth}px`,
+};
+
+const headerObserver = new IntersectionObserver(
+  stickyNavigation,
+  observerOptions
+);
+headerObserver.observe(header);
