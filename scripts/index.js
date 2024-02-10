@@ -8,11 +8,13 @@ const btnCloseModal = document.querySelector('.btn--close-modal');
 const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
 const btnScrollTo = document.querySelector('.btn--scroll-to');
 const section1 = document.querySelector('#section--1');
+const allSections = document.querySelectorAll('.section');
 const tabs = document.querySelectorAll('.operations__tab');
 const tabContainer = document.querySelector('.operations__tab-container');
 const tabsContent = document.querySelectorAll('.operations__content');
 const nav = document.querySelector('.nav');
 const header = document.querySelector('.header');
+const imgTarget = document.querySelectorAll('img[data-src]');
 
 ///////////////////////////////////////
 // Modal window
@@ -115,11 +117,10 @@ nav.addEventListener('mouseout', handleMenuFade.bind(1));
 
 //Sticky navigation
 const navHeigth = nav.getBoundingClientRect().height;
-console.log(navHeigth);
+
 //every time observer intersects with observer.observe(element) this function will be called
 const stickyNavigation = function (entries) {
   const [entry] = entries;
-  console.log(entry);
   if (!entry.isIntersecting) nav.classList.add('sticky');
   else nav.classList.remove('sticky');
 };
@@ -135,3 +136,42 @@ const headerObserver = new IntersectionObserver(
   observerOptions
 );
 headerObserver.observe(header);
+
+//Reveal sections smoothly
+
+const revealSections = function (entries, observer) {
+  const [entry] = entries;
+
+  if (!entry.isIntersecting) return;
+  entry.target.classList.remove('section--hidden');
+  observer.unobserve(entry.target);
+};
+
+const sectionObserver = new IntersectionObserver(revealSections, {
+  root: null,
+  treshhold: 0.15,
+});
+
+allSections.forEach(section => {
+  sectionObserver.observe(section);
+  section.classList.add('section--hidden');
+});
+
+//Lazy loading images
+
+const loadImages = function (entries, observer) {
+  const [entry] = entries;
+  if (!entry.isIntersecting) return;
+  entry.target.src = entry.target.dataset.src;
+  entry.target.addEventListener('load', function () {
+    entry.target.classList.remove('lazy-img');
+  });
+  observer.unobserve(entry.target);
+};
+
+const imagesObserver = new IntersectionObserver(loadImages, {
+  root: null,
+  treshhold: 0,
+  rootMargin: `200px`,
+});
+imgTarget.forEach(img => imagesObserver.observe(img));
